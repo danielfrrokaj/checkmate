@@ -1,18 +1,18 @@
 :root {
-  --primary-color: #4a90e2;
-  --text-color: #333;
-  --bg-color: #fff;
-  --border-color: #e1e1e1;
-  --hover-color: #f5f5f5;
+  --primary-color: #ff8c00;
+  --text-color: #ffffff;
+  --bg-color: transparent;
+  --border-color: #ffffff;
+  --hover-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #5c9ce6;
-    --text-color: #e1e1e1;
-    --bg-color: #2c2c2c;
-    --border-color: #404040;
-    --hover-color: #363636;
+    --primary-color: #ff8c00;
+    --text-color: #ffffff;
+    --bg-color: transparent;
+    --border-color: #ffffff;
+    --hover-color: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -25,12 +25,15 @@
 body {
   width: 350px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-color);
+  background: url('assets/background.png') no-repeat center center;
+  background-size: cover;
   color: var(--text-color);
+  position: relative;
 }
 
 .container {
   padding: 16px;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 h1 {
@@ -42,6 +45,7 @@ h1 {
 h2 {
   font-size: 18px;
   margin: 16px 0;
+  color: var(--primary-color);
 }
 
 .task-input {
@@ -50,15 +54,23 @@ h2 {
   margin-bottom: 16px;
 }
 
-input[type="text"] {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 14px;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+::placeholder {
+  text-align: center; 
 }
+
+input[type="text"], input[type="number"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding-left: 10px;
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: rgb(225, 143, 2);
+}
+
 
 button {
   padding: 8px 16px;
@@ -75,7 +87,7 @@ button:hover {
 }
 
 .timer-section {
-  background-color: var(--hover-color);
+  background-color: rgba(0, 0, 0, 0.3);
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -86,22 +98,55 @@ button:hover {
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 12px;
-  color: var(--primary-color);
+  color: var(--text-color);
 }
 
 .timer-controls {
   display: flex;
   gap: 8px;
   justify-content: center;
+  margin-bottom: 12px;
 }
 
-input[type="number"] {
-  width: 60px;
-  padding: 8px;
-  border: 1px solid var(--border-color);
+.custom-time-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-time-wrapper input[type="number"] {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 4px;
   border-radius: 6px;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  z-index: 1;
+}
+
+.custom-time-wrapper:focus-within input[type="number"] {
+  display: block;
+}
+
+.custom-time-wrapper button:focus + input[type="number"] {
+  display: block;
+}
+
+.preset-times {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.preset-btn {
+  padding: 6px 12px;
+  font-size: 0.9em;
+  background-color: rgba(255, 140, 0, 0.7);
+}
+
+.preset-btn:hover {
+  background-color: var(--primary-color);
 }
 
 #taskList {
@@ -114,10 +159,13 @@ input[type="number"] {
   gap: 8px;
   padding: 8px;
   border-bottom: 1px solid var(--border-color);
+  background-color: rgba(0, 0, 0, 0.3);
+  margin-bottom: 4px;
+  border-radius: 4px;
 }
 
 .task-item:hover {
-  background-color: var(--hover-color);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .task-item.completed span {

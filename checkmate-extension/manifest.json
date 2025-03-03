@@ -3,7 +3,16 @@
   "name": "CheckMate - Task Manager",
   "version": "1.0",
   "description": "A simple to-do list with a built-in timer.",
-  "permissions": ["storage", "notifications"],
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms",
+    "background"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
