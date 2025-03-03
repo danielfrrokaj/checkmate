@@ -5,13 +5,13 @@ class Timer {
     this.isRunning = false;
     this.isBreakTime = false;
     this.originalTime = 25;
+    this.breakStartTime = 0;
     
     this.minutesDisplay = document.getElementById('minutes');
     this.secondsDisplay = document.getElementById('seconds');
-    this.startButton = document.getElementById('startTimer');
-    this.resetButton = document.getElementById('resetTimer');
-    this.customTimeInput = document.getElementById('customTime');
-    this.customTimeBtn = document.getElementById('customTimeBtn');
+    this.timerCircle = document.getElementById('timerCircle');
+    this.stopBreakBtn = document.getElementById('stopBreak');
+    this.normalControls = document.querySelector('.normal-controls');
     
     this.initializeEventListeners();
     this.initializeMessageListener();
@@ -21,14 +21,48 @@ class Timer {
   initializeMessageListener() {
     chrome.runtime.onMessage.addListener((message) => {
       if (message.action === 'TIME_UPDATED') {
-        this.minutes = message.minutes;
-        this.seconds = message.seconds;
+        if (this.isBreakTime && message.isRunning) {
+          // During break, calculate elapsed minutes
+          const elapsedMinutes = Math.floor((Date.now() - this.breakStartTime) / 60000);
+          this.minutes = elapsedMinutes;
+          this.seconds = Math.floor(((Date.now() - this.breakStartTime) % 60000) / 1000);
+        } else {
+          this.minutes = message.minutes;
+          this.seconds = message.seconds;
+        }
         this.isRunning = message.isRunning;
         this.isBreakTime = message.isBreakTime;
         this.updateDisplay();
-        this.updateButtonState();
+        this.updateTimerState();
+      } else if (message.action === 'SHOW_BREAK_SELECTION') {
+        this.showBreakSelection(message.suggestedBreak);
       }
     });
+  }
+
+  showBreakSelection(suggestedBreak) {
+    this.isBreakTime = true;
+    this.minutes = 0;
+    this.seconds = 0;
+    this.breakStartTime = Date.now();
+    this.updateDisplay();
+    
+    // Show break time UI
+    document.querySelector('.timer-section').classList.add('break-time');
+    document.querySelector('h1').textContent = 'Break Time!';
+    this.normalControls.style.display = 'none';
+    this.stopBreakBtn.style.display = 'block';
+    this.timerCircle.setAttribute('data-running', 'true');
+    
+    // Start break timer
+    chrome.runtime.sendMessage({
+      action: 'START_BREAK',
+      startTime: this.breakStartTime
+    });
+  }
+
+  updateTimerState() {
+    this.timerCircle.setAttribute('data-running', this.isRunning.toString());
   }
 
   async syncWithBackground() {
@@ -40,24 +74,29 @@ class Timer {
         this.isRunning = response.isRunning;
         this.isBreakTime = response.isBreakTime;
         this.updateDisplay();
-        this.updateButtonState();
+        this.updateTimerState();
+        
+        // Update header based on break time
+        document.querySelector('h1').textContent = this.isBreakTime ? 'Break Time!' : 'Focus';
+        if (this.isBreakTime) {
+          document.querySelector('.timer-section').classList.add('break-time');
+        }
       }
     } catch (error) {
       console.log('Initial sync error:', error);
     }
   }
 
-  updateButtonState() {
-    this.startButton.textContent = this.isRunning ? 'Pause' : 'Start';
-  }
-
   initializeEventListeners() {
-    this.startButton.addEventListener('click', () => this.toggleTimer());
-    this.resetButton.addEventListener('click', () => this.resetTimer());
-    this.customTimeInput.addEventListener('change', () => {
-      this.minutes = parseInt(this.customTimeInput.value);
-      this.originalTime = this.minutes;
-      this.updateDisplay();
+    this.timerCircle.addEventListener('click', () => {
+      if (!this.isBreakTime) {
+        this.toggleTimer();
+      }
+    });
+    
+    this.stopBreakBtn.addEventListener('click', () => {
+      this.resetTimer();
+      chrome.runtime.sendMessage({ action: 'STOP_BREAK' });
     });
     
     document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -66,14 +105,13 @@ class Timer {
         this.minutes = time;
         this.originalTime = time;
         this.seconds = 0;
-        this.customTimeInput.value = time;
         this.updateDisplay();
+        
+        // If timer is running, stop it when selecting new time
+        if (this.isRunning) {
+          this.toggleTimer();
+        }
       });
-    });
-
-    this.customTimeBtn.addEventListener('click', () => {
-      this.customTimeInput.style.display = 
-        this.customTimeInput.style.display === 'block' ? 'none' : 'block';
     });
   }
 
@@ -91,6 +129,19 @@ class Timer {
 
   resetTimer() {
     chrome.runtime.sendMessage({ action: 'RESET_TIMER' });
+    // Reset local state
+    this.minutes = 25; // Default to 25 minutes
+    this.seconds = 0;
+    this.isRunning = false;
+    this.isBreakTime = false;
+    this.updateDisplay();
+    this.updateTimerState();
+    
+    // Reset UI
+    document.querySelector('.timer-section').classList.remove('break-time');
+    document.querySelector('h1').textContent = 'Focus';
+    this.normalControls.style.display = 'block';
+    this.stopBreakBtn.style.display = 'none';
   }
 
   updateDisplay() {

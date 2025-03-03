@@ -16,6 +16,11 @@ class TaskManager {
         this.addTask();
       }
     });
+
+    // Enable drag and drop
+    this.taskList.addEventListener('dragstart', (e) => this.handleDragStart(e));
+    this.taskList.addEventListener('dragover', (e) => this.handleDragOver(e));
+    this.taskList.addEventListener('drop', (e) => this.handleDrop(e));
   }
 
   async loadTasks() {
@@ -35,6 +40,7 @@ class TaskManager {
         id: Date.now(),
         text: taskText,
         completed: false,
+        priority: this.tasks.length + 1,
         createdAt: new Date().toISOString()
       };
       
@@ -56,6 +62,54 @@ class TaskManager {
 
   deleteTask(taskId) {
     this.tasks = this.tasks.filter(t => t.id !== taskId);
+    this.updatePriorities();
+    this.saveTasks();
+    this.renderTasks();
+  }
+
+  updatePriorities() {
+    this.tasks.forEach((task, index) => {
+      task.priority = index + 1;
+    });
+  }
+
+  handleDragStart(e) {
+    const li = e.target.closest('li');
+    if (li) {
+      e.dataTransfer.setData('text/plain', li.dataset.taskId);
+      li.classList.add('dragging');
+    }
+  }
+
+  handleDragOver(e) {
+    e.preventDefault();
+    const li = e.target.closest('li');
+    if (li && !li.classList.contains('dragging')) {
+      const draggingItem = this.taskList.querySelector('.dragging');
+      const siblings = [...this.taskList.querySelectorAll('li:not(.dragging)')];
+      const nextSibling = siblings.find(sibling => {
+        const rect = sibling.getBoundingClientRect();
+        return e.clientY <= rect.top + rect.height / 2;
+      });
+
+      if (nextSibling) {
+        this.taskList.insertBefore(draggingItem, nextSibling);
+      } else {
+        this.taskList.appendChild(draggingItem);
+      }
+    }
+  }
+
+  handleDrop(e) {
+    e.preventDefault();
+    const draggedId = parseInt(e.dataTransfer.getData('text/plain'));
+    const items = [...this.taskList.querySelectorAll('li')];
+    const newTasks = items.map(item => {
+      return this.tasks.find(t => t.id === parseInt(item.dataset.taskId));
+    });
+
+    this.tasks = newTasks;
+    this.updatePriorities();
     this.saveTasks();
     this.renderTasks();
   }
@@ -63,9 +117,17 @@ class TaskManager {
   renderTasks() {
     this.taskList.innerHTML = '';
     
+    this.tasks.sort((a, b) => a.priority - b.priority);
+    
     this.tasks.forEach(task => {
       const li = document.createElement('li');
       li.className = `task-item ${task.completed ? 'completed' : ''}`;
+      li.draggable = true;
+      li.dataset.taskId = task.id;
+      
+      const priorityBadge = document.createElement('span');
+      priorityBadge.className = 'priority-badge';
+      priorityBadge.textContent = task.priority;
       
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
@@ -80,6 +142,7 @@ class TaskManager {
       deleteButton.textContent = '×';
       deleteButton.addEventListener('click', () => this.deleteTask(task.id));
       
+      li.appendChild(priorityBadge);
       li.appendChild(checkbox);
       li.appendChild(span);
       li.appendChild(deleteButton);

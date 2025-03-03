@@ -5,12 +5,48 @@ class BackgroundTimer {
     this.totalSeconds = 0;
     this.isBreakTime = false;
     this.originalTime = 25;
+    this.breakStartTime = null;
     
     this.initializeMessageListener();
     this.loadState();
     
-    // Listen for alarm
-    chrome.alarms.onAlarm.addListener(() => this.tick());
+    // Create a separate alarm for badge updates
+    chrome.alarms.create('badgeUpdate', {
+      periodInMinutes: 1
+    });
+    
+    // Listen for alarms
+    chrome.alarms.onAlarm.addListener((alarm) => {
+      if (alarm.name === 'timer') {
+        this.tick();
+      } else if (alarm.name === 'badgeUpdate') {
+        this.updateBadge();
+      }
+    });
+
+    // Set initial badge
+    this.updateBadge();
+  }
+
+  updateBadge() {
+    let minutes;
+    if (this.isBreakTime && this.isRunning) {
+      // For break time, show elapsed minutes
+      minutes = Math.floor((Date.now() - this.breakStartTime) / 60000);
+      chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
+    } else if (this.isRunning) {
+      // For focus time, show remaining minutes
+      const elapsedSeconds = Math.floor((Date.now() - this.startTime) / 1000);
+      const remainingSeconds = this.totalSeconds - elapsedSeconds;
+      minutes = Math.max(0, Math.floor(remainingSeconds / 60));
+      chrome.action.setBadgeBackgroundColor({ color: '#666666' });
+    } else {
+      // When stopped, show current set minutes
+      minutes = Math.floor(this.totalSeconds / 60);
+      chrome.action.setBadgeBackgroundColor({ color: '#666666' });
+    }
+    
+    chrome.action.setBadgeText({ text: minutes.toString() });
   }
 
   async loadState() {
@@ -51,6 +87,16 @@ class BackgroundTimer {
           const time = this.getCurrentTime();
           sendResponse(time);
           break;
+        case 'START_BREAK':
+          this.breakStartTime = message.startTime;
+          this.isBreakTime = true;
+          this.updateBadge();
+          break;
+        case 'STOP_BREAK':
+          this.isBreakTime = false;
+          this.breakStartTime = null;
+          this.updateBadge();
+          break;
       }
       return true;
     });
@@ -73,6 +119,7 @@ class BackgroundTimer {
       
       this.saveState();
       this.broadcastTime();
+      this.updateBadge();
     }
   }
 
@@ -81,15 +128,27 @@ class BackgroundTimer {
     chrome.alarms.clear('timer');
     this.saveState();
     this.broadcastTime();
+    this.updateBadge();
   }
 
   resetTimer() {
     this.stopTimer();
     this.isBreakTime = false;
     this.startTime = null;
-    this.totalSeconds = 0;
+    this.breakStartTime = null;
+    this.totalSeconds = 25 * 60; // Reset to 25 minutes
+    this.isRunning = false;
     this.saveState();
-    this.broadcastTime();
+    this.updateBadge();
+    
+    // Send a reset notification to update the UI
+    chrome.runtime.sendMessage({
+      action: 'TIME_UPDATED',
+      minutes: 25,
+      seconds: 0,
+      isRunning: false,
+      isBreakTime: false
+    });
   }
 
   tick() {
@@ -149,17 +208,20 @@ class BackgroundTimer {
     this.stopTimer();
     
     if (!this.isBreakTime) {
-      const breakMinutes = this.getBreakTime(this.originalTime);
-      this.isBreakTime = true;
-      this.totalSeconds = breakMinutes * 60;
-      this.startTimer();
-      
+      const suggestedBreak = this.getBreakTime(this.originalTime);
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
         title: 'Time\'s up!',
-        message: `Great work! You can now take a ${breakMinutes}-minute break.`,
+        message: `Great work! Suggested break time: ${suggestedBreak} minutes. Set your break time in the timer.`,
         priority: 2
+      });
+
+      // Send message to popup to show break time selection
+      chrome.runtime.sendMessage({
+        action: 'SHOW_BREAK_SELECTION',
+        suggestedBreak,
+        isBreakTime: true
       });
     } else {
       this.resetTimer();
