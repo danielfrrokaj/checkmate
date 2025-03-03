@@ -1,9 +1,12 @@
 # checkmate
 CheckMate - Your best friend in checking off tasks. is a simple and intuitive to-do list app designed to help you organize tasks and stay productive. Easily create tasks, set priorities, and tick them off as you complete them. Stay on track with a built-in timer, perfect for focused work sessions and time management. 
 
-![Content Creation](assets/figma/mockup/screen1.png)
-![Content Creation](assets/figma/mockup/screen2.png)
-![Content Creation](assets/figma/mockup/screen3.png)
+
+<div style="display: inline">
+  <img src="assets/figma/mockup/screen1.png" style="width 200px;">
+   <img src="assets/figma/mockup/screen2.png" style="width 200px;">
+   <img src="assets/figma/mockup/screen3.png" style="width 200px;">
+</div>
 
 
 # Core features
