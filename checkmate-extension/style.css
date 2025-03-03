@@ -1,0 +1,141 @@
+:root {
+  --primary-color: #4a90e2;
+  --text-color: #333;
+  --bg-color: #fff;
+  --border-color: #e1e1e1;
+  --hover-color: #f5f5f5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #5c9ce6;
+    --text-color: #e1e1e1;
+    --bg-color: #2c2c2c;
+    --border-color: #404040;
+    --hover-color: #363636;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 350px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.container {
+  padding: 16px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+h2 {
+  font-size: 18px;
+  margin: 16px 0;
+}
+
+.task-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--primary-color);
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.timer-section {
+  background-color: var(--hover-color);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.timer-display {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: var(--primary-color);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+input[type="number"] {
+  width: 60px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#taskList {
+  list-style: none;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.task-item:hover {
+  background-color: var(--hover-color);
+}
+
+.task-item.completed span {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.task-item input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.delete-task {
+  margin-left: auto;
+  background-color: transparent;
+  color: #ff4444;
+  padding: 4px 8px;
+}
+
+.delete-task:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+} 

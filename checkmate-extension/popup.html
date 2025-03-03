@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CheckMate - Task Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>CheckMate</h1>
+    
+    <div class="task-input">
+      <input type="text" id="taskInput" placeholder="Enter a new task...">
+      <button id="addTask">➕</button>
+    </div>
+
+    <div class="timer-section">
+      <div class="timer-display">
+        <span id="minutes">25</span>:<span id="seconds">00</span>
+      </div>
+      <div class="timer-controls">
+        <input type="number" id="customTime" min="1" max="60" value="25">
+        <button id="startTimer">Start</button>
+        <button id="resetTimer">Reset</button>
+      </div>
+    </div>
+
+    <div class="tasks-container">
+      <h2>Tasks</h2>
+      <ul id="taskList"></ul>
+    </div>
+  </div>
+
+  <script src="timer.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html> 
