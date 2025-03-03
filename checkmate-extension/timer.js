@@ -102,17 +102,32 @@ class Timer {
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const time = parseInt(btn.dataset.time);
-        this.minutes = time;
-        this.originalTime = time;
-        this.seconds = 0;
-        this.updateDisplay();
-        
-        // If timer is running, stop it when selecting new time
-        if (this.isRunning) {
-          this.toggleTimer();
-        }
+        this.setTime(time);
       });
     });
+
+    document.getElementById('customTimeForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const customTimeInput = document.getElementById('customTime');
+      const time = parseInt(customTimeInput.value);
+      
+      if (time && time > 0 && time <= 120) {
+        this.setTime(time);
+        customTimeInput.value = ''; // Clear the input after setting
+      }
+    });
+  }
+
+  setTime(minutes) {
+    this.minutes = minutes;
+    this.originalTime = minutes;
+    this.seconds = 0;
+    this.updateDisplay();
+    
+    // If timer is running, stop it when selecting new time
+    if (this.isRunning) {
+      this.toggleTimer();
+    }
   }
 
   toggleTimer() {

@@ -26,8 +26,11 @@
           <button class="preset-btn" data-time="20">20 min</button>
           <button class="preset-btn" data-time="30">30 min</button>
           <button class="preset-btn" data-time="45">45 min</button>
-          <button class="preset-btn" data-time="60">60 min</button>
         </div>
+        <form id="customTimeForm" class="custom-time-form">
+          <input type="number" id="customTime" min="1" max="120" placeholder="Custom time" class="custom-time-input">
+          <button type="submit" class="custom-time-btn">Set</button>
+        </form>
       </div>
       <button id="stopBreak" class="stop-break-btn" style="display: none;">Stop Break</button>
     </div>

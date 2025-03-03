@@ -69,8 +69,41 @@ input[type="checkbox"] {
   width: 20px;
   height: 20px;
   accent-color: rgb(225, 143, 2);
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--primary-color);
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  background-color: transparent;
 }
 
+input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '✓';
+  color: white;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+}
+
+input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px solid var(--primary-color);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+input[type="checkbox"]:checked::before {
+  display: none;
+}
 
 button {
   padding: 8px 16px;
@@ -95,31 +128,31 @@ button:hover {
 }
 
 .timer-circle {
-  width: 200px;
-  height: 200px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   background: rgba(255, 140, 0, 0.1);
-  border: 4px solid var(--primary-color);
-  margin: 0 auto 20px;
+  border: 3px solid var(--primary-color);
+  margin: 0 auto 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 0 0 20px rgba(255, 140, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.2);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .timer-circle[data-running="true"] {
-  border-color: var(--primary-color);
-  background: rgba(255, 140, 0, 0.15);
-  box-shadow: 0 0 25px rgba(255, 140, 0, 0.3);
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 25px rgba(0, 255, 0, 0.2);
 }
 
 .timer-circle[data-running="false"] {
-  border-color: #3498db;
-  background: rgba(52, 152, 219, 0.1);
-  box-shadow: 0 0 20px rgba(52, 152, 219, 0.2);
+  border-color: var(--primary-color);
+  background: rgba(255, 140, 0, 0.1);
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.2);
 }
 
 .timer-circle:hover {
@@ -127,11 +160,11 @@ button:hover {
 }
 
 .timer-circle[data-running="true"]:hover {
-  box-shadow: 0 0 30px rgba(255, 140, 0, 0.4);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
 }
 
 .timer-circle[data-running="false"]:hover {
-  box-shadow: 0 0 30px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 0 30px rgba(255, 140, 0, 0.3);
 }
 
 .timer-circle:active {
@@ -142,11 +175,11 @@ button:hover {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 4px;
-  font-size: 48px;
+  gap: 2px;
+  font-size: 32px;
   font-weight: bold;
   color: var(--text-color);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
   z-index: 1;
 }
 
@@ -208,7 +241,7 @@ button:hover {
   align-items: flex-start;
   gap: 8px;
   padding: 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--primary-color);
   background-color: rgba(255, 140, 0, 0.15);
   margin-bottom: 4px;
   border-radius: 8px;
@@ -231,6 +264,15 @@ button:hover {
 .task-item.completed span:not(.priority-badge) {
   text-decoration: line-through;
   opacity: 0.7;
+}
+
+.task-item.completed {
+  background-color: rgba(24, 177, 80, 0.2);
+  border-bottom: 1px solid rgba(24, 177, 80, 0.5);
+}
+
+.task-item.completed:hover {
+  background-color: rgba(24, 177, 80, 0.3);
 }
 
 .priority-badge {
@@ -283,4 +325,43 @@ button:hover {
 
 .stop-break-btn:hover {
   background-color: #ff6666;
+}
+
+.custom-time-form {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 0 16px;
+}
+
+.custom-time-input {
+  width: 160px;
+  height: 32px;
+  border-radius: 6px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Hide spinner buttons */
+.custom-time-input::-webkit-inner-spin-button,
+.custom-time-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-time-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.custom-time-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.custom-time-btn {
+  height: 32px;
+  padding: 0 16px;
+  background-color: var(--primary-color);
 } 
