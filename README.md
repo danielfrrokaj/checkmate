@@ -12,13 +12,18 @@ Focus - Your best friend in checking off tasks. is a simple and intuitive to-do 
 
 ## Features
 
-- ✅ Create, edit, and delete tasks
-- ⏱️ Built-in Pomodoro timer
-- 🔴 Priority levels and labels
+- Create, edit, and delete tasks
+- Built-in timer
+- Arrange tasks by Priority
+- Insights about focused time
 
 ## Installation
 
-TBD
+1. On your chrome or chromium browser go to chrome://extensions/ 
+2. Click on "Load Uncpacked"
+3. Select the folder "focus_extension"
+3. You're done
+
 
 ## Technologies
 
