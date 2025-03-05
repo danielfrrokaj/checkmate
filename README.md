@@ -16,6 +16,8 @@ Focus - Your best friend in checking off tasks. is a simple and intuitive to-do 
 - Built-in timer
 - Arrange tasks by Priority
 - Insights about focused time
+- Change primary color
+- Change backround image
 
 ## Installation
 
