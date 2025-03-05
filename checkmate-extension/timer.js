@@ -11,7 +11,9 @@ class Timer {
     this.secondsDisplay = document.getElementById('seconds');
     this.timerCircle = document.getElementById('timerCircle');
     this.stopBreakBtn = document.getElementById('stopBreak');
+    this.stopRestBtn = document.getElementById('stopRest');
     this.normalControls = document.querySelector('.normal-controls');
+    this.timerSection = document.querySelector('.timer-section');
     
     this.initializeEventListeners();
     this.initializeMessageListener();
@@ -63,6 +65,16 @@ class Timer {
 
   updateTimerState() {
     this.timerCircle.setAttribute('data-running', this.isRunning.toString());
+    this.timerSection.setAttribute('data-running', this.isRunning.toString());
+    
+    // Update completion state
+    if (this.minutes === 0 && this.seconds === 0 && !this.isRunning) {
+      this.timerCircle.setAttribute('data-completed', 'true');
+      this.stopRestBtn.style.display = 'block';
+    } else {
+      this.timerCircle.removeAttribute('data-completed');
+      this.stopRestBtn.style.display = 'none';
+    }
   }
 
   async syncWithBackground() {
@@ -89,12 +101,17 @@ class Timer {
 
   initializeEventListeners() {
     this.timerCircle.addEventListener('click', () => {
-      if (!this.isBreakTime) {
+      if (!this.isBreakTime && !this.timerCircle.hasAttribute('data-completed')) {
         this.toggleTimer();
       }
     });
     
     this.stopBreakBtn.addEventListener('click', () => {
+      this.resetTimer();
+      chrome.runtime.sendMessage({ action: 'STOP_BREAK' });
+    });
+
+    this.stopRestBtn.addEventListener('click', () => {
       this.resetTimer();
       chrome.runtime.sendMessage({ action: 'STOP_BREAK' });
     });
@@ -157,11 +174,25 @@ class Timer {
     document.querySelector('h1').textContent = 'Focus';
     this.normalControls.style.display = 'block';
     this.stopBreakBtn.style.display = 'none';
+    this.stopRestBtn.style.display = 'none';
+    
+    // Reset any custom time input
+    const customTimeInput = document.getElementById('customTime');
+    if (customTimeInput) {
+      customTimeInput.value = '';
+    }
   }
 
   updateDisplay() {
-    this.minutesDisplay.textContent = String(this.minutes).padStart(2, '0');
-    this.secondsDisplay.textContent = String(this.seconds).padStart(2, '0');
+    if (this.isBreakTime) {
+      // For break time, always show positive numbers
+      this.minutesDisplay.textContent = String(Math.abs(this.minutes)).padStart(2, '0');
+      this.secondsDisplay.textContent = String(Math.abs(this.seconds)).padStart(2, '0');
+    } else {
+      // For focus time
+      this.minutesDisplay.textContent = String(Math.max(0, this.minutes)).padStart(2, '0');
+      this.secondsDisplay.textContent = String(Math.max(0, this.seconds)).padStart(2, '0');
+    }
   }
 }
 

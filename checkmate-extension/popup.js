@@ -129,23 +129,28 @@ class TaskManager {
       priorityBadge.className = 'priority-badge';
       priorityBadge.textContent = task.priority;
       
+      const span = document.createElement('span');
+      span.textContent = task.text;
+      
+      const taskActions = document.createElement('div');
+      taskActions.className = 'task-actions';
+      
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.checked = task.completed;
       checkbox.addEventListener('change', () => this.toggleTask(task.id));
-      
-      const span = document.createElement('span');
-      span.textContent = task.text;
       
       const deleteButton = document.createElement('button');
       deleteButton.className = 'delete-task';
       deleteButton.textContent = '×';
       deleteButton.addEventListener('click', () => this.deleteTask(task.id));
       
+      taskActions.appendChild(checkbox);
+      taskActions.appendChild(deleteButton);
+      
       li.appendChild(priorityBadge);
-      li.appendChild(checkbox);
       li.appendChild(span);
-      li.appendChild(deleteButton);
+      li.appendChild(taskActions);
       this.taskList.appendChild(li);
     });
   }

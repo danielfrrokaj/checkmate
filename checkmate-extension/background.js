@@ -9,10 +9,11 @@ class BackgroundTimer {
     
     this.initializeMessageListener();
     this.loadState();
+    this.checkFirstTime();
     
-    // Create a separate alarm for badge updates
+    // Create a separate alarm for badge updates with higher frequency
     chrome.alarms.create('badgeUpdate', {
-      periodInMinutes: 1
+      periodInMinutes: 1/60  // Update every second
     });
     
     // Listen for alarms
@@ -28,25 +29,44 @@ class BackgroundTimer {
     this.updateBadge();
   }
 
+  async checkFirstTime() {
+    const result = await chrome.storage.local.get(['hasSeenInstructions']);
+    if (!result.hasSeenInstructions) {
+      // Show welcome notification with instructions
+      await chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon.png',
+        title: 'Welcome to Focus!',
+        message: 'Click on the timer circle to start your first focus session. You can set custom times or use presets.',
+        priority: 2
+      });
+
+      // Mark instructions as seen
+      await chrome.storage.local.set({ hasSeenInstructions: true });
+    }
+  }
+
   updateBadge() {
-    let minutes;
-    if (this.isBreakTime && this.isRunning) {
-      // For break time, show elapsed minutes
-      minutes = Math.floor((Date.now() - this.breakStartTime) / 60000);
+    if (this.isBreakTime) {
+      // For break time, show "rest"
+      chrome.action.setBadgeText({ text: 'rest' });
       chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
     } else if (this.isRunning) {
       // For focus time, show remaining minutes
       const elapsedSeconds = Math.floor((Date.now() - this.startTime) / 1000);
       const remainingSeconds = this.totalSeconds - elapsedSeconds;
-      minutes = Math.max(0, Math.floor(remainingSeconds / 60));
+      const minutes = Math.max(0, Math.floor(remainingSeconds / 60));
+      chrome.action.setBadgeText({ text: minutes.toString() });
+      chrome.action.setBadgeBackgroundColor({ color: '#666666' });
+    } else if (this.totalSeconds > 0) {
+      // When paused, show "pause"
+      chrome.action.setBadgeText({ text: 'pause' });
       chrome.action.setBadgeBackgroundColor({ color: '#666666' });
     } else {
-      // When stopped, show current set minutes
-      minutes = Math.floor(this.totalSeconds / 60);
+      // When reset, show "0"
+      chrome.action.setBadgeText({ text: '0' });
       chrome.action.setBadgeBackgroundColor({ color: '#666666' });
     }
-    
-    chrome.action.setBadgeText({ text: minutes.toString() });
   }
 
   async loadState() {
@@ -90,11 +110,18 @@ class BackgroundTimer {
         case 'START_BREAK':
           this.breakStartTime = message.startTime;
           this.isBreakTime = true;
+          this.isRunning = true;
+          // Create alarm for break time updates
+          chrome.alarms.create('timer', {
+            periodInMinutes: 1/60
+          });
           this.updateBadge();
           break;
         case 'STOP_BREAK':
           this.isBreakTime = false;
           this.breakStartTime = null;
+          this.isRunning = false;
+          chrome.alarms.clear('timer');
           this.updateBadge();
           break;
       }
@@ -152,7 +179,13 @@ class BackgroundTimer {
   }
 
   tick() {
-    if (!this.isRunning) return;
+    if (!this.isRunning && !this.isBreakTime) return;
+
+    if (this.isBreakTime) {
+      this.broadcastTime();
+      this.updateBadge();
+      return;
+    }
 
     const elapsedSeconds = Math.floor((Date.now() - this.startTime) / 1000);
     const remainingSeconds = this.totalSeconds - elapsedSeconds;
@@ -161,36 +194,54 @@ class BackgroundTimer {
       this.timerComplete();
     } else {
       this.broadcastTime();
+      this.updateBadge();
     }
   }
 
   broadcastTime() {
     const time = this.getCurrentTime();
     if (time) {
-      chrome.runtime.sendMessage({
-        action: 'TIME_UPDATED',
-        ...time
-      });
+      // Wrap the sendMessage in a try-catch to handle cases where popup is not open
+      try {
+        chrome.runtime.sendMessage({
+          action: 'TIME_UPDATED',
+          ...time
+        });
+      } catch (error) {
+        // Silently handle the error - popup is not open
+        console.debug('Popup not open, skipping message broadcast');
+      }
+      this.updateBadge(); // Update badge with each time broadcast
     }
   }
 
   getCurrentTime() {
-    if (!this.isRunning && !this.startTime) return null;
+    if (!this.isRunning && !this.startTime && !this.isBreakTime) return null;
+    
+    if (this.isBreakTime) {
+      return {
+        minutes: 0,
+        seconds: 0,
+        isRunning: true,
+        isBreakTime: true
+      };
+    }
     
     const elapsedSeconds = Math.floor((Date.now() - this.startTime) / 1000);
     const remainingSeconds = this.totalSeconds - elapsedSeconds;
     
     return {
-      minutes: Math.floor(remainingSeconds / 60),
-      seconds: remainingSeconds % 60,
+      minutes: Math.max(0, Math.floor(remainingSeconds / 60)),
+      seconds: Math.max(0, remainingSeconds % 60),
       isRunning: this.isRunning,
       isBreakTime: this.isBreakTime
     };
   }
 
-  getBreakTime(focusMinutes) {
-    if (focusMinutes <= 30) return 5;
-    if (focusMinutes <= 60) return 10;
+  getBreakTime(focusTime) {
+    // Calculate break time based on focus time
+    if (focusTime <= 25) return 5;
+    if (focusTime <= 45) return 10;
     return 15;
   }
 
@@ -209,7 +260,12 @@ class BackgroundTimer {
     
     if (!this.isBreakTime) {
       const suggestedBreak = this.getBreakTime(this.originalTime);
-      chrome.notifications.create({
+      
+      // Save focus session
+      await this.saveFocusSession(this.originalTime);
+      
+      // Create notification
+      await chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
         title: 'Time\'s up!',
@@ -218,14 +274,19 @@ class BackgroundTimer {
       });
 
       // Send message to popup to show break time selection
-      chrome.runtime.sendMessage({
-        action: 'SHOW_BREAK_SELECTION',
-        suggestedBreak,
-        isBreakTime: true
-      });
+      try {
+        chrome.runtime.sendMessage({
+          action: 'SHOW_BREAK_SELECTION',
+          suggestedBreak,
+          isBreakTime: true
+        });
+      } catch (error) {
+        // Silently handle the error - popup is not open
+        console.debug('Popup not open, skipping break selection message');
+      }
     } else {
       this.resetTimer();
-      chrome.notifications.create({
+      await chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
         title: 'Break time\'s over!',
@@ -233,6 +294,32 @@ class BackgroundTimer {
         priority: 2
       });
     }
+  }
+
+  async saveFocusSession(duration) {
+    const stats = await chrome.storage.local.get(['focusSessions']);
+    const sessions = stats.focusSessions || [];
+    
+    // Create a new session with proper date formatting
+    const newSession = {
+      date: new Date().toISOString(),
+      duration: parseInt(duration) || 0
+    };
+    
+    sessions.push(newSession);
+
+    // Keep only last 30 days of sessions
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const filteredSessions = sessions.filter(session => 
+      new Date(session.date) >= thirtyDaysAgo
+    );
+
+    await chrome.storage.local.set({ focusSessions: filteredSessions });
+    
+    // Log for debugging
+    console.log('Saved focus session:', newSession);
+    console.log('Total sessions:', filteredSessions.length);
   }
 }
 

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html style="background-color: black;">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Insights</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header-row">
+      <h1>Focus Insights</h1>
+      <button id="backButton" class="icon-button" title="Back to Timer">
+        <img src="icons/back.png" alt="Back" class="icon-img">
+      </button>
+    </div>
+
+    <div class="insights-container">
+      <div class="insight-card">
+        <h2>Today's Focus</h2>
+        <div class="insight-value" id="todayFocus">0 min</div>
+      </div>
+
+      <div class="insight-card">
+        <h2>This Week</h2>
+        <div class="insight-value" id="weekFocus">0 min</div>
+        <div class="insight-subtitle">Average: <span id="weekAverage">0 min</span>/day</div>
+      </div>
+
+      <div class="insight-card">
+        <h2>This Month</h2>
+        <div class="insight-value" id="monthFocus">0 min</div>
+        <div class="insight-subtitle">Average: <span id="monthAverage">0 min</span>/day</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="insights.js"></script>
+</body>
+</html> 

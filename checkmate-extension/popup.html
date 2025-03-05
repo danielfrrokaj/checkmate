@@ -2,12 +2,36 @@
 <html style="background-color: black;">
 <head>
   <meta charset="UTF-8">
-  <title>CheckMate - Task Manager</title>
+  <title>Focus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1 style="text-align: center;">Focus</h1>
+    <div class="header-row">
+      <h1>Focus</h1>
+      <div class="controls-header">
+        <button id="cycleBackground" class="icon-button" title="Change Background">
+          <img src="icons/reload.png" alt="Reload" class="icon-img">
+        </button>
+        <div class="color-picker-wrapper">
+          <button id="showColorPicker" class="icon-button" title="Change Theme Color">
+            <img src="icons/color.png" alt="Color" class="icon-img">
+          </button>
+          <div class="color-palette">
+            <button class="color-option" data-color="#ff8c00" style="background-color: #ff8c00;"></button>
+            <button class="color-option" data-color="#4CAF50" style="background-color: #4CAF50;"></button>
+            <button class="color-option" data-color="#2196F3" style="background-color: #2196F3;"></button>
+            <button class="color-option" data-color="#9C27B0" style="background-color: #9C27B0;"></button>
+            <button class="color-option" data-color="#f44336" style="background-color: #f44336;"></button>
+            <button class="color-option" data-color="#FFC107" style="background-color: #FFC107;"></button>
+            <button class="color-option" data-color="#9E9E9E" style="background-color: #9E9E9E;"></button>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <div class="task-input">
       <input type="text" id="taskInput" placeholder="Enter a new task..." style="border-radius: 20px; width: 100%;">
@@ -19,7 +43,11 @@
         <div class="timer-display">
           <span id="minutes">25</span>:<span id="seconds">00</span>
         </div>
+        <div class="completion-message">
+          <span>Nice job, time to rest!</span>
+        </div>
       </div>
+      <button id="stopRest" class="stop-rest-btn" style="display: none;">Stop Resting</button>
       <div class="normal-controls">
         <div class="preset-times">
           <button class="preset-btn" data-time="10">10 min</button>
@@ -39,9 +67,11 @@
       <h2>Tasks</h2>
       <ul id="taskList"></ul>
     </div>
+    <a href="insights.html" class="insights-link">View Insights →</a>
   </div>
 
   <script src="timer.js"></script>
   <script src="popup.js"></script>
+  <script src="settings.js"></script>
 </body>
 </html> 

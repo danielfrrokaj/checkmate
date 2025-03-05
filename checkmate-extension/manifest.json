@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CheckMate - Task Manager",
+  "name": "Focus - Timer and Task Manager",
   "version": "1.0",
-  "description": "A simple to-do list with a built-in timer.",
+  "description": "Be organized and focused with this simple extension.",
   "permissions": [
     "storage",
     "notifications",
