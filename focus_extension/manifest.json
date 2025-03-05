@@ -5,8 +5,6 @@
   "description": "Be organized and focused with this simple extension.",
   "permissions": [
     "storage",
-    "notifications",
-    "alarms",
     "background"
   ],
   "background": {
