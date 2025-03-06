@@ -1,10 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Focus - Timer and Task Manager",
-  "version": "1.0",
-  "description": "Be organized and focused with this simple extension.",
+  "version": "1.2",
+  "description": "A simple to-do list with a built-in timer.",
   "permissions": [
     "storage",
+    "notifications",
+    "alarms",
     "background"
   ],
   "background": {
